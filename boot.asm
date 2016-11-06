@@ -47,6 +47,8 @@ start:
     or eax, 1 << 16
     mov cr0, eax
 
+    lgdt [gdt64.pointer]
+
     mov word [0xb8000], 0x0e48 ; H
     mov word [0xb8002], 0x0e65 ; e
     mov word [0xb8004], 0x0e6c ; l
@@ -72,3 +74,14 @@ p3_table:
     resb 4096
 p2_table:
     resb 4096
+
+section .rodata ; readonly data
+gdt64:
+  dq 0
+.code: equ $ - gdt64
+  dq (1<<44) | (1<<47) | (1<<41) | (1<<43) | (1<<53) ; 44: 'descriptor type', 47: 'present', 41: 'read/write', 43: 'executable'. 53: '64-bit'
+.data: equ $ -  gdt64
+  dq (1<<44) | (1<<47) | (1<<41)
+.pointer:
+  dw .pointer - gdt64 - 1
+  dq gdt64
