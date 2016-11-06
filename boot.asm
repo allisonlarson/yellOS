@@ -49,6 +49,14 @@ start:
 
     lgdt [gdt64.pointer]
 
+    mov ax, gdt64.data ; ax: 16bit register
+    mov ss, ax ; stack segment register
+    mov ds, ax ; data segment register, points to the data segment of GDT
+    mov es, ax ; extra segmenter register
+
+    ; jump to long mode
+    jmp gdt64.code:long_mode_start
+
     mov word [0xb8000], 0x0e48 ; H
     mov word [0xb8002], 0x0e65 ; e
     mov word [0xb8004], 0x0e6c ; l
@@ -85,3 +93,10 @@ gdt64:
 .pointer:
   dw .pointer - gdt64 - 1
   dq gdt64
+
+section .text
+bits 64
+long_mode_start:
+  mov rax, 0x2f592f412f4b2f4f
+  mov qword [0xb8000], rax
+  hlt
